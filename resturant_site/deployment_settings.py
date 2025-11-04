@@ -36,7 +36,7 @@ STORAGES ={
         "BACKEND" : "djanog.core.file.storage.FileSystemStorage"
     },
     "staticfiles": {
-        "BACKEND":"whitenoise.storage.CompressedStaticFileStorage"
+        "BACKEND":"whitenoise.storage.CompressedStaticFilesStorage"
     }
 }
 
