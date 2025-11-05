@@ -33,7 +33,7 @@ CORS_ALLOWED_ORIGINS = [
 
 STORAGES ={
     "default": {
-        "BACKEND" : "djanog.core.file.storage.FileSystemStorage"
+        "BACKEND" : 'django.core.files.storage.FileSystemStorage'
     },
     "staticfiles": {
         "BACKEND":"whitenoise.storage.CompressedStaticFilesStorage"
