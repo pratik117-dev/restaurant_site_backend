@@ -21,6 +21,8 @@ urlpatterns = [
     path('admin/menu/', views.AdminMenuListView.as_view()),  # Added: For adding menu items (POST)
     path('admin/menu/<int:pk>/delete/', views.AdminMenuDeleteView.as_view()), #for deleting the item 
     path('admin/menu/<int:pk>/', views.AdminMenuUpdateView.as_view()),  # Add this for PUT updates
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]+ + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+   
+
 
 urlpatterns = format_suffix_patterns(urlpatterns)
