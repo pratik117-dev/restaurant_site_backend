@@ -25,9 +25,9 @@ MIDDLEWARE = [
 ]
 
 
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:5173',  # Frontend URL
-# ]
+CORS_ALLOWED_ORIGINS = [
+    'https://restaurant-site-backend-frontend.onrender.com',  # Frontend URL
+]
 
 
 
