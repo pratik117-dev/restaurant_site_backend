@@ -32,20 +32,25 @@ class RegisterView(generics.GenericAPIView):
         # Generate OTP
         otp = str(random.randint(100000, 999999))
 
-        # Send OTP email
-        send_mail(
-            'Your OTP for Registration',
-            f'Your OTP is {otp}. It expires in 10 minutes.',
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
+        try:
+            # Send OTP email
+            send_mail(
+                'Your OTP for Registration',
+                f'Your OTP is {otp}. It expires in 10 minutes.',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Email error: {e}")  # Log for debugging
+            return Response({'error': 'Failed to send OTP'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Store in database
         OTP.objects.filter(email=email).delete()
         OTP.objects.create(email=email, otp=otp, name=name, password=make_password(password))
 
         return Response({'message': 'OTP sent to your email'}, status=status.HTTP_200_OK)
+
 
 class VerifyOTPView(generics.GenericAPIView):
     def post(self, request):
