@@ -18,7 +18,8 @@ class LoginSerializer(serializers.Serializer):
 class MenuItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MenuItem
-        fields = '__all__'
+        fields = ['id', 'name', 'description', 'price', 'image', 'category']
+
 
 class OrderSerializer(serializers.ModelSerializer):
     items = MenuItemSerializer(many=True, read_only=True)
