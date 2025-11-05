@@ -22,19 +22,24 @@ class RegisterView(generics.GenericAPIView):
     serializer_class = UserSerializer
 
     def post(self, request):
-        print(f"Request data: {request.data}")  # Debug log
+        print(f"Register POST received: {request.data}")  # More debug
         email = request.data.get('email')
         name = request.data.get('name')
         password = request.data.get('password')
 
+        print(f"Email: {email}, Name: {name}, Password: {'*' * len(password) if password else None}")  # Debug
+
         if not all([email, name, password]):
+            print("Missing fields")  # Debug
             return Response({'error': 'All fields required'}, status=status.HTTP_400_BAD_REQUEST)
 
         if CustomUser.objects.filter(email=email).exists():
+            print("Email already exists")  # Debug
             return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Generate OTP
         otp = str(random.randint(100000, 999999))
+        print(f"Generated OTP: {otp}")  # Debug
 
         try:
             send_mail(
@@ -44,15 +49,18 @@ class RegisterView(generics.GenericAPIView):
                 [email],
                 fail_silently=False,
             )
+            print("Email sent successfully")  # Debug
         except Exception as e:
-            print(f"Email error: {e}")  # Debug log
+            print(f"Email error: {str(e)}")  # Debug
             return Response({'error': 'Failed to send OTP'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Store in database
         OTP.objects.filter(email=email).delete()
         OTP.objects.create(email=email, otp=otp, name=name, password=make_password(password))
+        print("OTP stored in DB")  # Debug
 
         return Response({'message': 'OTP sent to your email'}, status=status.HTTP_200_OK)
+
 
 
 class VerifyOTPView(generics.GenericAPIView):
