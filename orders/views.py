@@ -69,14 +69,15 @@ class VerifyOTPView(generics.GenericAPIView):
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key, 'user': {'email': user.email, 'name': user.name, 'is_admin': user.is_admin}}, status=status.HTTP_201_CREATED)
 
-# Rest of the views remain the same
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
+        print(f"Login data: {request.data}")  # Debug
         email = request.data.get('email')
         password = request.data.get('password')
         user = authenticate(request, email=email, password=password)
+        print(f"Authenticated user: {user}")  # Debug
         if user:
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key, 'user': {'email': user.email, 'name': user.name, 'is_admin': user.is_admin}})
