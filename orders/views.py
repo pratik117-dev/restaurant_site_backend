@@ -83,6 +83,7 @@ class LoginView(generics.GenericAPIView):
             return Response({'token': token.key, 'user': {'email': user.email, 'name': user.name, 'is_admin': user.is_admin}})
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class MenuListView(generics.ListAPIView):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
