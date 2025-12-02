@@ -165,7 +165,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'ppoudel1011@gmail.com'  # Replace with your Gmail
-EMAIL_HOST_PASSWORD = 'mevi jkzk bfxx nnye'  # Use App Password for Gmail
+EMAIL_HOST_PASSWORD = '**** **** **** ****'  # Use App Password for Gmail
 DEFAULT_FROM_EMAIL = 'ppoudel1011@gmail.com'
 
 
