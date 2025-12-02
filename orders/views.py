@@ -7,6 +7,10 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .models import MenuItem, Order, CustomUser, OTP
 from .serializers import UserSerializer, LoginSerializer, MenuItemSerializer, OrderSerializer, AdminOrderSerializer  # Added AdminOrderSerializer
+
+
+
+
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
@@ -56,12 +60,13 @@ class VerifyOTPView(generics.GenericAPIView):
         except OTP.DoesNotExist:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create user
-        user = CustomUser.objects.create_user(
+        # Create user with hashed password
+        user = CustomUser(
             email=otp_obj.email,
             name=otp_obj.name,
-            password=otp_obj.password
+            password=otp_obj.password  # Already hashed
         )
+        user.save()  # Save without hashing again
 
         # Delete OTP
         otp_obj.delete()
@@ -69,20 +74,19 @@ class VerifyOTPView(generics.GenericAPIView):
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key, 'user': {'email': user.email, 'name': user.name, 'is_admin': user.is_admin}}, status=status.HTTP_201_CREATED)
 
+
+# Rest of the views remain the same
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
-        print(f"Login data: {request.data}")  # Debug
         email = request.data.get('email')
         password = request.data.get('password')
         user = authenticate(request, email=email, password=password)
-        print(f"Authenticated user: {user}")  # Debug
         if user:
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key, 'user': {'email': user.email, 'name': user.name, 'is_admin': user.is_admin}})
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class MenuListView(generics.ListAPIView):
     queryset = MenuItem.objects.all()
