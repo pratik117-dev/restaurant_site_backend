@@ -112,28 +112,25 @@ WSGI_APPLICATION = 'resturant_site.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# Use PostgreSQL in production, SQLite in development
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 import dj_database_url
+import os
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-print(f"DATABASE_URL found: {bool(DATABASE_URL)}")
+print("DATABASE_URL found:", bool(DATABASE_URL))
+
 if DATABASE_URL:
     try:
         DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
+            "default": dj_database_url.parse(
+                DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
         }
-        print("Database ENGINE:", DATABASES['default'].get('ENGINE'))
+        print("FINAL DB ENGINE:", DATABASES["default"].get("ENGINE"))
     except Exception as e:
-        print("DB Parse Error:", e)
+        print("DB PARSE ERROR:", e)
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.sqlite3",
@@ -141,7 +138,7 @@ if DATABASE_URL:
             }
         }
 else:
-    print("No DATABASE_URL found → using SQLite")
+    print("No DATABASE_URL → Using SQLite")
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -229,3 +226,6 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='ppoudel1011@gmail.com
 
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Use database for sessions
+
+
+print(">>> FINAL DATABASES VALUE:", DATABASES)
