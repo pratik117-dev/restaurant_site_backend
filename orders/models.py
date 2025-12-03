@@ -7,6 +7,8 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from datetime import timedelta
 
+from cloudinary.models import CloudinaryField
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, name, password=None, **extra_fields):
         if not email:
@@ -49,24 +51,39 @@ class OTP(models.Model):
         return timezone.now() > self.created_at + timedelta(minutes=10)
 
 # Rest of the models (MenuItem, Order, OrderItem) remain the same
+
 class MenuItem(models.Model):
     SIZE_CHOICES = [
         ('SMALL', 'Small'),
         ('MEDIUM', 'Medium'),
         ('LARGE', 'Large'),
     ]
+    
     CATEGORY_CHOICES = [
         ('CHICKEN', 'Chicken'),
         ('VEG', 'Veg'),
         ('DRINKS', 'Drinks'),
     ]
+    
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)  # Base price
-    image = models.ImageField(upload_to='menu_images/')
+    
+    # Use CloudinaryField with blank=True, null=True for admin compatibility
+    image = CloudinaryField('image', folder='menu_images/', blank=True, null=True)
+    
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='VEG')
+    
     def __str__(self):
         return self.name
+    
+    @property
+    def image_url(self):
+        """Get the Cloudinary URL for the image"""
+        if self.image:
+            return self.image.url
+        return None
+
 
 
 

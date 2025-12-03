@@ -15,10 +15,33 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
+    
+
 class MenuItemSerializer(serializers.ModelSerializer):
+    # This will return the full Cloudinary URL
+    image_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = MenuItem
-        fields = '__all__'
+        fields = ['id', 'name', 'description', 'price', 'image', 'image_url', 'category']
+        extra_kwargs = {
+            'image': {'write_only': True}  # Accept uploads but don't return raw field
+        }
+    
+    def get_image_url(self, obj):
+        """Return the full Cloudinary URL for the image"""
+        if obj.image:
+            return obj.image.url
+        return None
+    
+    def create(self, validated_data):
+        """Handle image upload when creating menu item"""
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        """Handle image upload when updating menu item"""
+        return super().update(instance, validated_data)
+    
 
 class OrderSerializer(serializers.ModelSerializer):
     items = MenuItemSerializer(many=True, read_only=True)
