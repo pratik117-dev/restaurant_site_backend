@@ -121,43 +121,31 @@ WSGI_APPLICATION = 'resturant_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Use PostgreSQL in production, SQLite in development
 import dj_database_url
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Debug: Print to see if DATABASE_URL is being read
 print(f"DATABASE_URL found: {bool(DATABASE_URL)}")
 if DATABASE_URL:
-    print(f"DATABASE_URL starts with: {DATABASE_URL[:20]}...")
-
-if DATABASE_URL:
-    # Production database (PostgreSQL on Render)
     try:
         DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-            )
+            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
         }
-        print(f"Database ENGINE: {DATABASES['default'].get('ENGINE')}")
+        print("Database ENGINE:", DATABASES['default'].get('ENGINE'))
     except Exception as e:
-        print(f"Error parsing DATABASE_URL: {e}")
-        # Fallback to SQLite if parsing fails
+        print("DB Parse Error:", e)
         DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
             }
         }
 else:
-    # Development database (SQLite)
-    print("No DATABASE_URL found, using SQLite")
+    print("No DATABASE_URL found → using SQLite")
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
