@@ -4,7 +4,7 @@ Production settings for Render deployment.
 
 import os
 import dj_database_url
-from .settings import BASE_DIR, INSTALLED_APPS, MIDDLEWARE
+from .settings import BASE_DIR, INSTALLED_APPS, MIDDLEWARE, TEMPLATES
 
 # -------------------
 # SECURITY
@@ -19,6 +19,7 @@ CSRF_TRUSTED_ORIGINS = ['https://' + os.environ.get("RENDER_EXTERNAL_HOSTNAME")]
 # -------------------
 INSTALLED_APPS = INSTALLED_APPS  # Import from base settings
 MIDDLEWARE = MIDDLEWARE  # Import from base settings
+TEMPLATES = TEMPLATES 
 
 # -------------------
 # CORS
