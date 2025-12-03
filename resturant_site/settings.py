@@ -11,7 +11,18 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
-from decouple import config
+
+# Try to import decouple, fallback to os.environ if not available
+try:
+    from decouple import config
+except ImportError:
+    # Fallback for deployment environments without python-decouple
+    def config(key, default=None, cast=None):
+        value = os.environ.get(key, default)
+        if cast and value is not None:
+            return cast(value)
+        return value
+
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -20,7 +31,7 @@ import cloudinary.api
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Cloudinary Configuration - Load from .env file
+# Cloudinary Configuration - Load from environment variables
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': config('CLOUDINARY_API_KEY'),
