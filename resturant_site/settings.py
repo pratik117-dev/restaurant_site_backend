@@ -115,13 +115,19 @@ WSGI_APPLICATION = 'resturant_site.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Use PostgreSQL in production, SQLite in development
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+# Use PostgreSQL in production, SQLite in development
 import dj_database_url
 
-if os.environ.get('DATABASE_URL'):
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
     # Production database (PostgreSQL on Render)
     DATABASES = {
         'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
+            default=DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True,
         )
@@ -134,7 +140,6 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
