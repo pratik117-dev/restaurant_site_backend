@@ -4,7 +4,7 @@ Production settings for Render deployment.
 
 import os
 import dj_database_url
-from .settings import BASE_DIR
+from .settings import BASE_DIR, INSTALLED_APPS, MIDDLEWARE
 
 # -------------------
 # SECURITY
@@ -15,19 +15,10 @@ ALLOWED_HOSTS = [os.environ.get("RENDER_EXTERNAL_HOSTNAME")]
 CSRF_TRUSTED_ORIGINS = ['https://' + os.environ.get("RENDER_EXTERNAL_HOSTNAME")]
 
 # -------------------
-# MIDDLEWARE
+# APPS & MIDDLEWARE
 # -------------------
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+INSTALLED_APPS = INSTALLED_APPS  # Import from base settings
+MIDDLEWARE = MIDDLEWARE  # Import from base settings
 
 # -------------------
 # CORS
@@ -39,15 +30,16 @@ CORS_ALLOWED_ORIGINS = [
 # -------------------
 # STATIC & MEDIA
 # -------------------
-STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
-}
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Whitenoise storage for static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Default media storage (Cloudinary can be used)
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # -------------------
 # DATABASE (PostgreSQL)
