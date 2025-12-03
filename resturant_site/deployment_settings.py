@@ -9,7 +9,7 @@ import dj_database_url
 # -------------------
 # SECURITY
 # -------------------
-DEBUG = True
+DEBUG = False
 SECRET_KEY = os.environ.get("SECRET_KEY")
 RENDER_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if not RENDER_HOSTNAME:
