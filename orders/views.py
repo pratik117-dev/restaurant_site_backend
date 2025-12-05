@@ -19,62 +19,57 @@ from decimal import Decimal
 import random
 from django.contrib.auth.hashers import make_password
 
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.hashers import make_password
+
 class RegisterView(generics.GenericAPIView):
     serializer_class = UserSerializer
-
+    
     def post(self, request):
         email = request.data.get('email')
         name = request.data.get('name')
         password = request.data.get('password')
-
+        
+        # Validate required fields
+        if not email or not name or not password:
+            return Response(
+                {'error': 'Email, name, and password are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if email already exists
         if CustomUser.objects.filter(email=email).exists():
-            return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Generate OTP
-        otp = str(random.randint(100000, 999999))
-
-        # Send OTP email
-        send_mail(
-            'Your OTP for Registration',
-            f'Your OTP is {otp}. It expires in 10 minutes.',
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
-
-        # Store in database
-        OTP.objects.filter(email=email).delete()
-        OTP.objects.create(email=email, otp=otp, name=name, password=make_password(password))
-
-        return Response({'message': 'OTP sent to your email'}, status=status.HTTP_200_OK)
-
-class VerifyOTPView(generics.GenericAPIView):
-    def post(self, request):
-        email = request.data.get('email')
-        otp = request.data.get('otp')
-
+            return Response(
+                {'error': 'Email already registered'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create user directly
         try:
-            otp_obj = OTP.objects.get(email=email, otp=otp)
-            if otp_obj.is_expired():
-                return Response({'error': 'OTP expired'}, status=status.HTTP_400_BAD_REQUEST)
-        except OTP.DoesNotExist:
-            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Create user with hashed password
-        user = CustomUser(
-            email=otp_obj.email,
-            name=otp_obj.name,
-            password=otp_obj.password  # Already hashed
-        )
-        user.save()  # Save without hashing again
-
-        # Delete OTP
-        otp_obj.delete()
-
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key, 'user': {'email': user.email, 'name': user.name, 'is_admin': user.is_admin}}, status=status.HTTP_201_CREATED)
-
-
+            user = CustomUser.objects.create_user(
+                email=email,
+                name=name,
+                password=password
+            )
+            
+            # Generate token
+            token, created = Token.objects.get_or_create(user=user)
+            
+            return Response({
+                'token': token.key,
+                'user': {
+                    'email': user.email,
+                    'name': user.name,
+                    'is_admin': user.is_admin
+                }
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 # Rest of the views remain the same
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
