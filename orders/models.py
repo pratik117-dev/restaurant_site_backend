@@ -94,6 +94,7 @@ class Order(models.Model):
         ('CANCELLED', 'Cancelled'),
         ('DELIVERYOUT', 'Out_for_delivery'),
         ('DELIVERED', 'Delivery_Success'),
+        ('PAID', 'Paid'),
     ]
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     items = models.ManyToManyField(MenuItem)
