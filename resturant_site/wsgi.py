@@ -2,17 +2,16 @@
 WSGI config for resturant_site project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
 """
 
 import os
-
 from django.core.wsgi import get_wsgi_application
 
-
-settings_module = 'resturant_site.deployment_settings' if 'RENDER_EXTERNAL_HOSTNAME' in os.environ else 'resturant_site.settings'
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
+# If running on Railway, load deployment settings
+# Railway always sets the variable "RAILWAY_ENVIRONMENT"
+if "RAILWAY_ENVIRONMENT" in os.environ:
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "resturant_site.deployment_settings")
+else:
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "resturant_site.settings")
 
 application = get_wsgi_application()
