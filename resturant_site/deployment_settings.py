@@ -4,6 +4,8 @@ from decouple import config
 SECRET_KEY = config('SECRET_KEY')
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1","*", "https://restaurantsitebackend-production.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = ['https://restaurantsitebackend-production.up.railway.app']
+
 
 
 DATABASES = {
