@@ -128,3 +128,16 @@ class CartItem(models.Model):
         return Decimal(self.item.price) * self.quantity
 
 
+#delivery status 
+class DeliveryStatus(models.Model):
+    available = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Delivery Status"
+        verbose_name_plural = "Delivery Status"
+    
+    @classmethod
+    def get_status(cls):
+        status, created = cls.objects.get_or_create(id=1)
+        return status

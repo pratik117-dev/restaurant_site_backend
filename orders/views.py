@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .models import MenuItem, Order, CustomUser, OTP
-from .serializers import UserSerializer, LoginSerializer, MenuItemSerializer, OrderSerializer, AdminOrderSerializer  # Added AdminOrderSerializer
+from .models import MenuItem, Order, CustomUser, OTP, DeliveryStatus
+from .serializers import UserSerializer, LoginSerializer, MenuItemSerializer, OrderSerializer, AdminOrderSerializer,  DeliveryStatusSerializer  # Added AdminOrderSerializer
 
 
 
@@ -186,3 +186,17 @@ class AdminMenuUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAdminUser]
     http_method_names = ['put']
     partial = True  # Allow partial updates
+
+
+
+class DeliveryStatusView(generics.RetrieveUpdateAPIView):
+    serializer_class = DeliveryStatusSerializer
+    http_method_names = ['get', 'patch']
+    
+    def get_object(self):
+        return DeliveryStatus.get_status()
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        return [IsAdminUser()]

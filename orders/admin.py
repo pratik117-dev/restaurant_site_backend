@@ -3,7 +3,7 @@ from .models import CustomUser, MenuItem, Order
 
 from django import forms
 from django.utils.html import format_html
-from .models import MenuItem
+from .models import MenuItem, DeliveryStatus
 from cloudinary.forms import CloudinaryFileField
 
 
@@ -87,3 +87,15 @@ class MenuItemAdmin(admin.ModelAdmin):
             'description': 'Upload a new image or keep the existing one'
         }),
     )
+
+
+@admin.register(DeliveryStatus)
+class DeliveryStatusAdmin(admin.ModelAdmin):
+    list_display = ['available', 'updated_at']
+    readonly_fields = ['updated_at']
+    
+    def has_add_permission(self, request):
+        return not DeliveryStatus.objects.exists()
+    
+    def has_delete_permission(self, request, obj=None):
+        return False

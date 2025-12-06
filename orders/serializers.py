@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, MenuItem, Order
+from .models import CustomUser, MenuItem, Order, DeliveryStatus
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -76,3 +76,11 @@ class AdminOrderSerializer(serializers.ModelSerializer):  # New serializer for a
         model = Order
         fields = ['id', 'user', 'items', 'items_ids', 'status', 'total_price', 'created_at', 'phone', 'location']
         read_only_fields = ['user', 'total_price', 'created_at']  # Status is writable for admins
+
+
+
+#delivery status serializer 
+class DeliveryStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryStatus
+        fields = ['available', 'updated_at']
