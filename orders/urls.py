@@ -8,8 +8,8 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
     path('auth/register/', views.RegisterView.as_view()),
-    path('auth/verify-otp/', views.VerifyOTPView.as_view()),
-    path('auth/resend-otp/', views.ResendOTPView.as_view()),
+    # path('auth/verify-otp/', views.VerifyOTPView.as_view()),
+    # path('auth/resend-otp/', views.ResendOTPView.as_view()),
     path('auth/login/', views.LoginView.as_view()),
     path('auth/me/', views.CurrentUserView.as_view()),
     path('menu/', views.MenuListView.as_view()),

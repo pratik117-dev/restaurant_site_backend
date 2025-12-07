@@ -7,9 +7,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from datetime import timedelta
 
-from django.contrib.auth.hashers import make_password
-
-
 from cloudinary.models import CloudinaryField
 
 class CustomUserManager(BaseUserManager):
@@ -31,28 +28,27 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=100)
-
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)  # IMPORTANT
-
+    is_active = models.BooleanField(default=True)
+    otp = models.CharField(max_length=6, blank=True, null=True)
+    otp_created_at = models.DateTimeField(blank=True, null=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
-
     objects = CustomUserManager()
 
     def __str__(self):
         return self.email
 
+# class OTP(models.Model):
+#     email = models.EmailField()
+#     otp = models.CharField(max_length=6)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     name = models.CharField(max_length=100)
+#     password = models.CharField(max_length=128)
 
-class OTP(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
-    otp = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    raw_password = models.CharField(max_length=128)
-
-    def is_expired(self):
-        return timezone.now() > self.created_at + timedelta(minutes=10)
+#     def is_expired(self):
+#         return timezone.now() > self.created_at + timedelta(minutes=10)
 
 # Rest of the models (MenuItem, Order, OrderItem) remain the same
 
@@ -132,7 +128,7 @@ class CartItem(models.Model):
         return Decimal(self.item.price) * self.quantity
 
 
-#delivery status 
+#delivery status
 class DeliveryStatus(models.Model):
     available = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
