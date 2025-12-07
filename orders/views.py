@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from .models import MenuItem, Order, CustomUser, OTP, DeliveryStatus
-from .serializers import UserSerializer, LoginSerializer, MenuItemSerializer, OrderSerializer, AdminOrderSerializer,  DeliveryStatusSerializer  # Added AdminOrderSerializer
+from .serializers import UserSerializer, LoginSerializer, MenuItemSerializer, OrderSerializer, AdminOrderSerializer,OTPVerifySerializer,ResendOTPSerializer,  DeliveryStatusSerializer  # Added AdminOrderSerializer
 
 
 
@@ -24,53 +24,105 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password
 
+from django.core.mail import send_mail
+
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.core.mail import send_mail
+from .models import OTP, CustomUser
+import random
+
+# -------------------
+# RegisterView: create inactive user + OTP
+# -------------------
 class RegisterView(generics.GenericAPIView):
     serializer_class = UserSerializer
-    
+
     def post(self, request):
         email = request.data.get('email')
         name = request.data.get('name')
         password = request.data.get('password')
-        
-        # Validate required fields
+
         if not email or not name or not password:
-            return Response(
-                {'error': 'Email, name, and password are required'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Check if email already exists
-        if CustomUser.objects.filter(email=email).exists():
-            return Response(
-                {'error': 'Email already registered'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Create user directly
+            return Response({'error': 'Email, name, and password are required'}, status=400)
+
+        if CustomUser.objects.filter(email=email, is_active=True).exists():
+            return Response({'error': 'Email already registered'}, status=400)
+
+        # Delete old inactive user + OTP
+        CustomUser.objects.filter(email=email, is_active=False).delete()
+
+        # Create inactive user
+        user = CustomUser.objects.create(email=email, name=name, is_active=False)
+
+        # Generate OTP
+        otp_code = str(random.randint(100000, 999999))
+        OTP.objects.create(user=user, otp=otp_code, raw_password=password)
+
+        # Send OTP via email
+        send_mail(
+            subject="Your OTP Code",
+            message=f"Your OTP is: {otp_code}",
+            from_email=None,
+            recipient_list=[email],
+            fail_silently=False
+        )
+
+        return Response({'message': 'OTP sent to your email. Verify to activate account.'}, status=201)
+
+
+# -------------------
+# VerifyOTPView: activate user and hash password
+# -------------------
+class VerifyOTPView(generics.GenericAPIView):
+    def post(self, request):
+        email = request.data.get('email')
+        otp_code = request.data.get('otp')
+
         try:
-            user = CustomUser.objects.create_user(
-                email=email,
-                name=name,
-                password=password
-            )
-            
-            # Generate token
-            token, created = Token.objects.get_or_create(user=user)
-            
-            return Response({
-                'token': token.key,
-                'user': {
-                    'email': user.email,
-                    'name': user.name,
-                    'is_admin': user.is_admin
-                }
-            }, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response(
-                {'error': str(e)}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-# Rest of the views remain the same
+            user = CustomUser.objects.get(email=email)
+            otp_obj = OTP.objects.get(user=user, otp=otp_code)
+        except (CustomUser.DoesNotExist, OTP.DoesNotExist):
+            return Response({'error': 'Invalid OTP or email'}, status=400)
+
+        if otp_obj.is_expired():
+            return Response({'error': 'OTP expired'}, status=400)
+
+        # ✅ Hash password and activate user
+        user.set_password(otp_obj.raw_password)
+        user.is_active = True
+        user.save()
+
+        # Delete OTP after verification
+        otp_obj.delete()
+
+        # Generate token
+        token, _ = Token.objects.get_or_create(user=user)
+
+        return Response({
+            'message': 'Account verified successfully',
+            'token': token.key,
+            'user': {
+                'email': user.email,
+                'name': user.name,
+                'is_admin': user.is_admin
+            }
+        }, status=200)
+# -------------------
+# Resend OTP
+# -------------------
+class ResendOTPView(generics.GenericAPIView):
+    serializer_class = ResendOTPSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            otp_code = serializer.save()
+            return Response({'message': f'OTP resent to email.', 'otp': otp_code}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
 

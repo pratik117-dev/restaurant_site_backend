@@ -7,6 +7,9 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from datetime import timedelta
 
+from django.contrib.auth.hashers import make_password
+
+
 from cloudinary.models import CloudinaryField
 
 class CustomUserManager(BaseUserManager):
@@ -28,24 +31,25 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=100)
+
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    otp = models.CharField(max_length=6, blank=True, null=True)
-    otp_created_at = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=False)  # IMPORTANT
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
+
     objects = CustomUserManager()
 
     def __str__(self):
         return self.email
 
+
 class OTP(models.Model):
-    email = models.EmailField()
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=100)
-    password = models.CharField(max_length=128)
+    raw_password = models.CharField(max_length=128)
 
     def is_expired(self):
         return timezone.now() > self.created_at + timedelta(minutes=10)
