@@ -102,6 +102,8 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     phone = models.CharField(max_length=15, blank=True, null=True)  # Added
     location = models.TextField(blank=True, null=True)  # Added
+    latitude = models.DecimalField(max_digits=12, decimal_places=9, blank=True, null=True)  # NEW
+    longitude = models.DecimalField(max_digits=12, decimal_places=9, blank=True, null=True)  # NEW
     items_data = models.JSONField(default=list)  # Store quantities and prices
 
 

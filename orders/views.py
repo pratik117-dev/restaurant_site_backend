@@ -131,8 +131,20 @@ class CheckoutUpdateView(generics.UpdateAPIView):
     http_method_names = ['patch']
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        # Allow users to update their own orders
+        # Also check if order status allows checkout (e.g., PENDING status)
+        return Order.objects.filter(user=self.request.user, status='PENDING')
+    
+    def get_object(self):
+        # Get the order by pk and verify it belongs to the user
+        queryset = self.get_queryset()
+        obj = generics.get_object_or_404(queryset, pk=self.kwargs.get('pk'))
+        return obj
 
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
+    
 class CurrentUserView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
